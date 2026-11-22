@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07111f" />
+    <title>WattWatch | Energy Anomaly Intelligence</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">W</div>
+        <div><strong>WattWatch</strong><span>Energy Intelligence</span></div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-view="overview">Overview</button>
+        <button class="nav-item" data-view="training">Training</button>
+        <button class="nav-item" data-view="anomalies">Anomalies</button>
+        <button class="nav-item" data-view="method">Methodology</button>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="status-dot"></span>
+        <div><strong>System ready</strong><small>API: 8000</small></div>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">AI-BASED ENERGY MONITORING</p>
+          <h1>Hidden wastage detection</h1>
+        </div>
+        <div class="header-actions">
+          <button class="secondary-button" id="uploadButton">Upload data</button>
+          <input type="file" id="fileInput" accept=".txt,.csv,.zip" hidden />
+          <button class="primary-button" id="runButton">Run analysis</button>
+        </div>
+      </header>
+
+      <section id="overview" class="view active">
+        <div class="notice" id="notice">Dataset will be downloaded from UCI if no local file is uploaded.</div>
+
+        <div class="metric-grid">
+          <article class="metric-card blue">
+            <div class="metric-icon">T</div>
+            <div><span>Evaluated period</span><strong id="periodValue">—</strong><small id="periodNote">Waiting for analysis</small></div>
+          </article>
+          <article class="metric-card red">
+            <div class="metric-icon">A</div>
+            <div><span>Anomaly ratio</span><strong id="anomalyValue">—</strong><small id="anomalyNote">Validation threshold pending</small></div>
+          </article>
+          <article class="metric-card green">
+            <div class="metric-icon">E</div>
+            <div><span>Estimated excess energy</span><strong id="wastageValue">—</strong><small>Conservative positive residuals</small></div>
+          </article>
+          <article class="metric-card violet">
+            <div class="metric-icon">F1</div>
+            <div><span>Labeled test F1</span><strong id="f1Value">—</strong><small id="f1Note">Requires labeled input data</small></div>
+          </article>
+        </div>
+
+        <div class="panel-grid">
+          <article class="panel wide">
+            <div class="panel-heading">
+              <div><p>CONSUMPTION PROFILE</p><h2>Actual vs reconstructed usage</h2></div>
+              <div class="legend"><span class="blue-key"></span>Actual <span class="green-key"></span>Baseline</div>
+            </div>
+            <canvas id="reconstructionChart"></canvas>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading"><div><p>MODEL PERFORMANCE</p><h2>Reconstruction error</h2></div></div>
+            <canvas id="errorChart"></canvas>
+          </article>
+        </div>
+
+        <div class="panel-grid lower">
+          <article class="panel">
+            <div class="panel-heading"><div><p>TEMPORAL PATTERN</p><h2>Average usage by hour</h2></div></div>
+            <canvas id="hourlyChart"></canvas>
+          </article>
+          <article class="panel">
+            <div class="panel-heading"><div><p>WEEKLY PATTERN</p><h2>Average usage by day</h2></div></div>
+            <canvas id="weeklyChart"></canvas>
+          </article>
+        </div>
+      </section>
+
+      <section id="training" class="view">
+        <div class="panel-grid">
+          <article class="panel wide">
+            <div class="panel-heading"><div><p>TRAINING PROCESS</p><h2>Loss convergence</h2></div></div>
+            <canvas id="lossChart"></canvas>
+          </article>
+          <article class="panel settings-panel">
+            <p>ANALYSIS SETTINGS</p>
+            <label>Threshold percentile
+              <select id="thresholdInput"><option>95</option><option>97</option><option selected>99</option></select>
+            </label>
+            <label>Training epochs
+              <input id="epochsInput" type="number" min="1" max="100" value="10" />
+            </label>
+            <label>Sequence length
+              <input id="sequenceInput" type="number" min="24" max="288" value="96" />
+            </label>
+            <button class="primary-button full" id="trainingRunButton">Start training</button>
+          </article>
+        </div>
+        <article class="panel dataset-panel">
+          <div class="panel-heading"><div><p>DATASET SPLIT</p><h2>Chronological validation</h2></div></div>
+          <div class="split-grid" id="splitGrid">
+            <div><strong>—</strong><span>Total intervals</span></div>
+            <div><strong>—</strong><span>Training</span></div>
+            <div><strong>—</strong><span>Validation</span></div>
+            <div><strong>—</strong><span>Testing</span></div>
+          </div>
+        </article>
+      </section>
+
+      <section id="anomalies" class="view">
+        <article class="panel">
+          <div class="panel-heading">
+            <div><p>DETECTION TIMELINE</p><h2>Anomalous intervals</h2></div>
+            <span class="threshold-badge" id="thresholdBadge">Threshold —</span>
+          </div>
+          <canvas id="anomalyChart"></canvas>
+        </article>
+        <article class="panel threshold-panel">
+          <div class="panel-heading"><div><p>THRESHOLD SENSITIVITY</p><h2>Compare percentile cutoffs</h2></div></div>
+          <div class="threshold-table" id="thresholdTable"></div>
+        </article>
+      </section>
+
+      <section id="method" class="view">
+        <div class="method-grid">
+          <article class="panel process-card">
+            <span>01</span><h2>Ingest & clean</h2>
+            <p>Download or upload UCI Household Power Consumption data. Parse dates, convert invalid values, interpolate gaps, and aggregate to 15-minute intervals.</p>
+          </article>
+          <article class="panel process-card">
+            <span>02</span><h2>Chronological split</h2>
+            <p>Use 70% for training, 15% for validation, and 15% for testing. Scale only on training data to prevent lookahead leakage.</p>
+          </article>
+          <article class="panel process-card">
+            <span>03</span><h2>Learn normal behavior</h2>
+            <p>Create 96-step, 24-hour sequences and train an LSTM Autoencoder to reconstruct expected consumption patterns.</p>
+          </article>
+          <article class="panel process-card">
+            <span>04</span><h2>Detect anomalies</h2>
+            <p>Calculate sequence mean absolute reconstruction error. The 99th validation percentile provides the default dynamic threshold.</p>
+          </article>
+          <article class="panel process-card">
+            <span>05</span><h2>Estimate wastage</h2>
+            <p>Map anomalies to timeline points and add positive kW residuals multiplied by 0.25 hours. This is a statistical estimate, not proof of intent.</p>
+          </article>
+          <article class="panel process-card">
+            <span>06</span><h2>Benchmark</h2>
+            <p>Compare against a 12-reading rolling mean plus 2.5 rolling standard deviations. Results remain unsupervised because ground truth is unavailable.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <div class="progress-overlay" id="progressOverlay" aria-live="polite">
+      <div class="progress-modal">
+        <div class="spinner"></div>
+        <h2 id="progressTitle">Preparing analysis</h2>
+        <p id="progressMessage">Starting…</p>
+        <div class="progress-track"><div id="progressBar"></div></div>
+      </div>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

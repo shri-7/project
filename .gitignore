@@ -1,0 +1,6 @@
+energy-wastage/backend/.venv/
+energy-wastage/backend/__pycache__/
+energy-wastage/data/*
+!energy-wastage/data/sample_household_power_consumption.csv
+energy-wastage/models/
+*.pyc
